@@ -1,0 +1,8 @@
+sum, dif = map(int, input().split())
+if sum % 2 != dif % 2: print(-1)
+elif sum+dif < sum-dif: print(-1)
+elif sum+dif < 0: print(-1)
+elif sum-dif < 0: print(-1)
+elif (sum+dif) % 2 == 1: print(-1)
+elif (sum-dif) % 2 == 1: print(-1)
+else: print((sum+dif)//2, (sum-dif)//2)
