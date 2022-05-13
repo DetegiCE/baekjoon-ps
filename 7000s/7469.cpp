@@ -1,91 +1,87 @@
-#include <cstdio>
-#include <vector>
+#include<cstdio>
+#include<vector>
+#include<algorithm>
 using namespace std;
 
-int n, m;
-int tst;
-vector<int> v[263000];
+typedef vector<int>::iterator iit;
 
-void merge(int idx) {
-    // printf("merge(%d)\n", idx);
-    int lidx = idx * 2;
-    int ridx = idx * 2 + 1;
-    int lsz = v[lidx].size();
-    int rsz = v[ridx].size();
-    int lpos = 0;
-    int rpos = 0;
-    while (lpos < lsz && rpos < rsz) {
-        if (v[lidx][lpos] < v[ridx][rpos]) {
-            v[idx].push_back(v[lidx][lpos]);
-            lpos++;
-        } else {
-            v[idx].push_back(v[ridx][rpos]);
-            rpos++;
+int n, m, cnt;
+int a[100001];
+vector<int> tree[270000];
+
+void mergeTree(int k) {
+    int lef = k*2;
+    int rig = k*2+1;
+    iit lefit = tree[lef].begin();
+    iit rigit = tree[rig].begin();
+    while(lefit != tree[lef].end() && rigit != tree[rig].end()) {
+        if(*lefit > *rigit) {
+            tree[k].push_back(*rigit);
+            rigit++;
+        }
+        else {
+            tree[k].push_back(*lefit);
+            lefit++;
         }
     }
-    while (lpos < lsz) v[idx].push_back(v[lidx][lpos]), lpos++;
-    while (rpos < rsz) v[idx].push_back(v[ridx][rpos]), rpos++;
+    while(lefit != tree[lef].end()) {
+        tree[k].push_back(*lefit);
+        lefit++;
+    }
+    while(rigit != tree[rig].end()) {
+        tree[k].push_back(*rigit);
+        rigit++;
+    }
 }
 
-vector<int> search(int left, int right) {
-    // printf("search(%d %d)\n", left, right);
-    if (left > right) {
-        return {};
-    }
-    if (left == right) {
-        return v[left];
-    }
-    bool nleft = false, nright = false;
-    if (left % 2 == 1) nleft = true;
-    if (right % 2 == 0) nright = true;
-    vector<int> nxt =
-        search((left + (nleft ? 1 : 0)) / 2, (right - (nright ? 1 : 0)) / 2);
-    vector<int> nv, mv;
-    if (nleft) {
-        int asz = v[left].size(), bsz = nxt.size();
-        int apos = 0, bpos = 0;
-        while (apos < asz && bpos < bsz) {
-            if (v[left][apos] < nxt[bpos])
-                nv.push_back(v[left][apos]), apos++;
-            else
-                nv.push_back(nxt[bpos]), bpos++;
+int getQuery(int lef, int rig, int k) {
+    lef = lef+cnt-1;
+    rig = rig+cnt-1;
+    int sum = 0;
+    while(lef < rig) {
+        if(lef%2==1) {
+            sum += tree[lef].end()-upper_bound(tree[lef].begin(),tree[lef].end(),k);
+            lef++;
         }
-        while (apos < asz) nv.push_back(v[left][apos]), apos++;
-        while (bpos < bsz) nv.push_back(nxt[bpos]), bpos++;
-    } else {
-        nv.assign(nxt.begin(), nxt.end());
-    }
-    if (nright) {
-        int asz = v[right].size(), bsz = nv.size();
-        int apos = 0, bpos = 0;
-        while (apos < asz && bpos < bsz) {
-            if (v[right][apos] < nv[bpos])
-                mv.push_back(v[right][apos]), apos++;
-            else
-                mv.push_back(nv[bpos]), bpos++;
+        if(rig%2==0) {
+            sum += tree[rig].end()-upper_bound(tree[rig].begin(),tree[rig].end(),k);
+            rig--;
         }
-        while (apos < asz) mv.push_back(v[right][apos]), apos++;
-        while (bpos < bsz) mv.push_back(nv[bpos]), bpos++;
-    } else {
-        mv.assign(nv.begin(), nv.end());
+        lef/=2;
+        rig/=2;
     }
-    return mv;
+    if(lef == rig) {
+        sum += tree[lef].end()-upper_bound(tree[lef].begin(),tree[lef].end(),k);
+    }
+    return sum;
 }
 
-int main() {
-    scanf("%d %d", &n, &m);
-    for (tst = 1; tst < n; tst <<= 1)
-        ;
-    for (int i = tst; i < tst + n; i++) {
-        int t;
-        scanf("%d", &t);
-        v[i].push_back(t);
+int main()
+{
+    scanf("%d %d",&n, &m);
+    for(int i=0 ; i<n ; i++) {
+        scanf("%d",&a[i]);
     }
-    for (int i = tst - 1; i >= 1; i--) merge(i);
-    for (int i = 0; i < m; i++) {
-        int p, q, r;
-        scanf("%d %d %d", &p, &q, &r);
-        vector<int> vs = search(p + tst - 1, q + tst - 1);
-        printf("%d\n", vs[r - 1]);
+    for(cnt=1 ; cnt<n ; cnt<<=1);
+    for(int i=0 ; i<n ; i++) {
+        tree[i+cnt].push_back(a[i]);
+    }
+    for(int i=cnt-1 ; i>=1 ; i--) {
+        mergeTree(i);
+    }
+    for(int i=0 ; i<m ; i++) {
+        int lef,rig,k;
+        scanf("%d %d %d",&lef,&rig,&k);
+        int left = -1000000001;
+        int right = 1000000001;
+        int mid;
+        while(left <= right) {
+            mid = (left + right) / 2;
+            int tempans = getQuery(lef, rig, mid);
+            if(tempans > k) left = mid + 1;
+            else right = mid - 1;
+        }
+        if(right < -1000000001) puts("0");
+        else printf("%d\n",right);
     }
 }
