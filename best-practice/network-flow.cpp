@@ -6,6 +6,7 @@ using namespace std;
 
 #define MAX 100
 #define INF 1e9
+#define MIN(A,B) (A>B?B:A)
 
 int n = 6, result;
 int cap[MAX][MAX], f[MAX][MAX], vis[MAX];
@@ -33,7 +34,7 @@ void maxFlow(int start, int end) {
         if (vis[end] == -1) break;
         int flow = INF;
         for (int i = end; i != start; i = vis[i]) {
-            flow = min(flow, c[vis[i]][i] - f[vis[i]][i]);
+            flow = MIN(flow, c[vis[i]][i] - f[vis[i]][i]);
         }
         for (int i = end; i != start; i = vis[i]) {
             f[vis[i]][i] += flow;

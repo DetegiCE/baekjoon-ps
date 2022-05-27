@@ -32,12 +32,6 @@ struct Trie {
     void erase(int t, int digit) {
         if(digit < 0) return;
         int nxt = t & (1 << digit);
-        if(digit == 0) {
-            go[nxt] = NULL;
-            cnt--;
-            if(cnt > 0) flag = true;
-            return;
-        }
         if(nxt != 0) nxt = 1;
         go[nxt]->erase(t, digit-1);
         if(flag) return;
@@ -56,12 +50,12 @@ struct Trie {
         if(nxt != 0) {
             if(go[0] != NULL) return go[0]->solve(t, digit-1);
             else if(go[1] != NULL) return ret + go[1]->solve(t, digit-1);
-            else return 0;
+            else return ret;
         }
         else {
             if(go[1] != NULL) return ret + go[1]->solve(t, digit-1);
             else if(go[0] != NULL) return go[0]->solve(t, digit-1);
-            else return 0;
+            else return ret; 
         }
     }
 };
@@ -70,21 +64,21 @@ int main()
 {
     int n;
     Trie *t = new Trie;
-    t->add(0, 31);
+    t->add(0, 30);
     scanf("%d", &n);
     while(n--) {
         int a, b;
         scanf("%d %d", &a, &b);
         if(a == 1) {
-            t->add(b, 31);
             mp[b]++;
+            t->add(b, 30);
         }
         if(a == 2) {
-            if(--mp[b] == 0) {
+            if(--mp[b] <= 0) {
                 flag = false;
-                t->erase(b, 31);
+                t->erase(b, 30);
             }
         }
-        if(a == 3) printf("%d\n", t->solve(b, 31) ^ b);
+        if(a == 3) printf("%d\n", (t->solve(b, 30)) ^ b);
     }
 }
