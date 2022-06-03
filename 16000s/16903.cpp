@@ -1,84 +1,84 @@
 #include<cstdio>
-#include<cstring>
-#include<cstdlib>
-#include<map>
 using namespace std;
 
-map<int, int> mp;
-bool flag;
+struct Node {
+    Node *l, *r;
+    int cnt;
 
-struct Trie {
-    Trie* go[2];
-    int cnt = 0;
+    Node() {
+        l = r = NULL;
+        cnt = 0;
+    }
+};
 
-    Trie() {
-        memset(go, 0, sizeof(go));
-    }
-    ~Trie() {
-        for(int i=0 ; i<2 ; i++) {
-            if(go[i]) delete go[i];
-        }
-    }
-    void add(int t, int digit) {
-        if(digit < 0) return;
-        int nxt = t & (1 << digit);
-        if(nxt != 0) nxt = 1;
-        if(go[nxt] == NULL) {
-            go[nxt] = new Trie;
-        }
-        cnt++;
-        go[nxt]->add(t, digit-1);
-    }
-    void erase(int t, int digit) {
-        if(digit < 0) return;
-        int nxt = t & (1 << digit);
-        if(nxt != 0) nxt = 1;
-        go[nxt]->erase(t, digit-1);
-        if(flag) return;
-        else {
-            go[nxt] = NULL;
-            cnt--;
-            if(cnt > 0) flag = true;
-            return;
-        }
-    }
-    int solve(int t, int digit) {
-        if(digit < 0) return 0;
-        int nxt = t & (1 << digit);
+struct XOR_Tree {
+    Node *root;
 
-        int ret = 1 << digit;
-        if(nxt != 0) {
-            if(go[0] != NULL) return go[0]->solve(t, digit-1);
-            else if(go[1] != NULL) return ret + go[1]->solve(t, digit-1);
-            else return ret;
+    XOR_Tree() {
+        root = new Node();
+    }
+
+    void add(int val) {
+        Node *x = root;
+        for(int i=30 ; i>=0 ; i--) {
+            int cur = 1 << i;
+            if(val & cur) {
+                if(!(x->r)) x->r = new Node();
+                x = x->r;
+            }
+            else {
+                if(!(x->l)) x->l = new Node();
+                x = x->l;
+            }
+            (x->cnt)++;
         }
-        else {
-            if(go[1] != NULL) return ret + go[1]->solve(t, digit-1);
-            else if(go[0] != NULL) return go[0]->solve(t, digit-1);
-            else return ret; 
+    }
+
+    void erase(int val) {
+        Node *x = root;
+        for(int i=30 ; i>=0 ; i--) {
+            int cur = 1 << i;
+            if(val & cur) x = x->r;
+            else x = x->l;
+            (x->cnt)--;
         }
+    }
+
+    int query(int val) {
+        Node *x = root;
+        int ans = 0;
+        for(int i=30 ; i>=0 ; i--) {
+            int cur = 1 << i;
+            if(val & cur) {
+                if(x->l && x->l->cnt) {
+                    x = x->l;
+                    ans |= cur;
+                }
+                else x = x->r;
+            }
+            else {
+                if(x->r && x->r->cnt) {
+                    x = x->r;
+                    ans |= cur;
+                }
+                else x = x->l;
+            }
+        }
+        return ans;
     }
 };
 
 int main()
 {
-    int n;
-    Trie *t = new Trie;
-    t->add(0, 30);
-    scanf("%d", &n);
-    while(n--) {
-        int a, b;
-        scanf("%d %d", &a, &b);
-        if(a == 1) {
-            mp[b]++;
-            t->add(b, 30);
-        }
-        if(a == 2) {
-            if(--mp[b] <= 0) {
-                flag = false;
-                t->erase(b, 30);
-            }
-        }
-        if(a == 3) printf("%d\n", (t->solve(b, 30)) ^ b);
+    int q;
+    XOR_Tree tree;
+    scanf("%d", &q);
+    tree.add(0);
+    while(q--) {
+        int a, x;
+        scanf("%d %d", &a, &x);
+        if(a == 1) tree.add(x);
+        else if(a == 2) tree.erase(x);
+        else printf("%d\n", tree.query(x));
     }
 }
