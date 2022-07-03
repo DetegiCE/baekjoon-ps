@@ -19,39 +19,42 @@ struct Query {
     }
 };
 
+int conv(int a) { return a + 100000; }
+
 vector<Query> query;
-vector<int> v;
+int vt[101001];
+int v[101001];
 ll ans[101001];
 
-int cnt[101001], bckcnt[500];
-deque<int> dq[101001];
+int cnt[201001], bckcnt[1000];
+deque<int> dq[201001];
 
 void add(int x, int dir) {
     int cur = 0;
-    if (!dq[v[x]].empty()) {
-        cur = dq[v[x]].back() - dq[v[x]].front();
+    if (!dq[conv(v[x])].empty()) {
+        cur = dq[conv(v[x])].back() - dq[conv(v[x])].front();
         cnt[cur]--;
         bckcnt[cur / sqrtN]--;
     }
     if (!dir)
-        dq[v[x]].push_front(x);
+        dq[conv(v[x])].push_front(x);
     else
-        dq[v[x]].push_back(x);
-    cur = dq[v[x]].back() - dq[v[x]].front();
+        dq[conv(v[x])].push_back(x);
+    cur = dq[conv(v[x])].back() - dq[conv(v[x])].front();
     cnt[cur]++;
     bckcnt[cur / sqrtN]++;
 }
 
 void sub(int x, int dir) {
-    int cur = dq[v[x]].back() - dq[v[x]].front();
+    int cur = dq[conv(v[x])].back() - dq[conv(v[x])].front();
     cnt[cur]--;
     bckcnt[cur / sqrtN]--;
     if (!dir)
-        dq[v[x]].pop_front();
+        dq[conv(v[x])].pop_front();
     else
-        dq[v[x]].pop_back();
-    if (!dq[v[x]].empty()) {
-        cur = dq[v[x]].back() - dq[v[x]].front();
+        dq[conv(v[x])].pop_back();
+    if (!dq[conv(v[x])].empty()) {
+        cur = dq[conv(v[x])].back() - dq[conv(v[x])].front();
         cnt[cur]++;
         bckcnt[cur / sqrtN]++;
     }
@@ -61,24 +64,26 @@ int calc() {
     for (int i = sqsz - 1; i >= 0; i--) {
         if (bckcnt[i] == 0) continue;
         for (int j = sqrtN - 1; j >= 0; j--) {
-            if (cnt[i * sqrtN + j] > 0) return i * sqrtN + j;
+            if (cnt[i * sqrtN + j] > 0) return (i * sqrtN + j) - 100000;
         }
     }
     return 0;
 }
 
 int main() {
-    int k, q;
-    scanf("%d %d", &n, &k);
-    sqrtN = 300;
-    sqsz = 101001 / sqrtN + 10;
-    v.resize(n + 1);
-    for (int i = 1; i <= n; i++) scanf("%d", &v[i]);
+    int k = 0, q;
+    scanf("%d", &n);
+    sqrtN = 450;
+    sqsz = 201001 / sqrtN + 10;
+    for (int i = 1; i <= n; i++) {
+        scanf("%d", &vt[i]);
+        v[i] = v[i - 1] + vt[i];
+    }
     scanf("%d", &q);
     for (int i = 0; i < q; i++) {
         int s, e;
         scanf("%d %d", &s, &e);
-        Query myQuery = {i, s, e};
+        Query myQuery = {i, s - 1, e};
         query.push_back(myQuery);
     }
     sort(query.begin(), query.end());
@@ -97,6 +102,6 @@ int main() {
         ans[query[i].idx] = calc();
     }
     for (int i = 0; i < q; i++) {
-        printf("%lld\n", ans[i]);
+        printf("%lld\n", conv(ans[i]));
     }
 }
