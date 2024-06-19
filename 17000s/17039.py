@@ -1,0 +1,6 @@
+a = list(map(int, input().split()))
+a.sort()
+if a[2] == a[0] + 2: print(0)
+elif a[1] == a[0] + 2 or a[2] == a[1] + 2: print(1)
+else: print(2)
+print(max(a[1]-a[0], a[2]-a[1])-1)
