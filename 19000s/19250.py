@@ -1,0 +1,1 @@
+print(*[3.14159265358979*list(map(int,input().split()))[3]**2 for _ in range(int(input()))], sep='\n')
